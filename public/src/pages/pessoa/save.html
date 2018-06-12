@@ -1,0 +1,223 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/iron-form/iron-form.html">
+<link rel="import" href="../../../bower_components/vaadin-button/vaadin-button.html">
+<link rel="import" href="../../../bower_components/vaadin-dialog/vaadin-dialog.html">
+<link rel="import" href="../../../bower_components/vaadin-checkbox/vaadin-checkbox.html">
+<link rel="import" href="../../../bower_components/vaadin-form-layout/vaadin-form-layout.html">
+<link rel="import" href="../../../bower_components/vaadin-form-layout/vaadin-form-item.html">
+<link rel="import" href="../../../bower_components/vaadin-text-field/vaadin-text-area.html">
+<link rel="import" href="../../../bower_components/vaadin-radio-button/vaadin-radio-group.html">
+<link rel="import" href="../../../bower_components/vaadin-radio-button/vaadin-radio-button.html">
+<link rel="import" href="../../../bower_components/vaadin-list-box/vaadin-list-box.html">
+<link rel="import" href="../../../bower_components/vaadin-date-picker/vaadin-date-picker.html">
+<link rel="import" href="../../../bower_components/vaadin-dropdown-menu/vaadin-dropdown-menu.html">
+<link rel="import" href="../../../bower_components/vaadin-combo-box/vaadin-combo-box.html">
+<link rel="import" href="../../../bower_components/vaadin-upload/vaadin-upload.html">
+<link rel="import" href="../../../bower_components/vaadin-ordered-layout/vaadin-vertical-layout.html">
+<link rel="import" href="../../../bower_components/vaadin-ordered-layout/vaadin-horizontal-layout.html">
+<link rel="import" href="../../../bower_components/vaadin-notification/vaadin-notification.html">
+
+<link rel="import" href="../../../bower_components/polymerfire/firebase-document.html">
+
+
+<link rel="import" href="../../shared/shared-styles.html">
+
+<dom-module id="save-pessoa">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        background: transparent;
+      }
+    </style>
+
+    <firebase-document
+        id="document"
+        app-name="fire"
+        path="/pessoas/[[pessoaId]]"
+        data="{{pessoa}}">
+    </firebase-document>
+
+    <div class="card">
+      <iron-form id="form">
+        <form>
+          <vaadin-vertical-layout>
+            <template is="dom-if" if="[[pessoaId]]">
+                <h2>Edite uma nova pessoa</h2>
+            
+            </template>
+            <template is="dom-if" if="[[!pessoaId]]">
+                <h2>Registre nova pessoa</h2>
+            
+            </template>
+            <vaadin-form-layout>
+              
+
+              <vaadin-form-item>
+                <label slot="label">Primeiro nome</label>
+                <vaadin-text-field required error-message="Entre com seu primeiro nome" 
+                                   class="full-width"
+                                   value="{{pessoa.nome}}"></vaadin-text-field>
+              </vaadin-form-item>
+
+              <vaadin-form-item>
+                <label slot="label">Ultimo nome</label>
+                <vaadin-text-field required error-message="Entre com seu ultimo nome" 
+                                   class="full-width"
+                                   value="{{pessoa.sobreNome}}"></vaadin-text-field>
+              </vaadin-form-item>
+
+              <vaadin-form-item>
+                <label slot="label">Email</label>
+                <vaadin-text-field required error-message="Entre com seu email" 
+                                   class="full-width"
+                                   value="{{pessoa.email}}"></vaadin-text-field>
+              </vaadin-form-item>
+
+              <vaadin-form-item>
+                <label slot="label">CPF</label>
+                <vaadin-text-field required error-message="Entre com seu CPF" 
+                                    class="full-width"
+                                    value="{{pessoa.cpf}}"></vaadin-text-field>
+              </vaadin-form-item>
+  
+              <vaadin-form-item>
+                <label slot="label">Data de nascimento</label>
+                <vaadin-date-picker class="full-width"
+                                    value="{{pessoa.nasci}}"></vaadin-date-picker>
+              </vaadin-form-item>
+
+
+              
+
+              <template is="dom-if" if="[[pessoaId]]">
+                  <hr>
+                  <vaadin-form-item colspan="1">
+                      <vaadin-button on-click="_resetForm">Novo</vaadin-button>
+                      <vaadin-button on-click="_deleteForm">Excluir</vaadin-button>                      
+                  </vaadin-form-item>
+              </template>
+
+              <template is="dom-if" if="[[!pessoaId]]"> 
+
+                  <vaadin-form-item colspan="2">
+                    <vaadin-checkbox checked="{{_canSubmit}}">Eu li os <a href on-click="toggleDialog">termos e condições</a></vaadin-checkbox>
+                  </vaadin-form-item>
+    
+                  <vaadin-form-item colspan="2">
+                    <vaadin-button disabled$="[[!_canSubmit]]" on-click="_submitForm">Salvar</vaadin-button>
+                  </vaadin-form-item>
+
+              </template>
+
+
+            </vaadin-form-layout>
+          </vaadin-vertical-layout>
+        </form>
+      </iron-form>
+    </div>
+
+    <vaadin-notification opened="{{formSubmittedOpen}}" duration="4000">
+      <template>
+        <h3>Submitted</h3>
+        Your registration was successful
+      </template>
+    </vaadin-notification>
+
+    <vaadin-notification opened="{{formInvalidOpen}}" duration="4000">
+      <template>
+        <h3>Some fields invalid</h3>
+        Please fill all the required fields and try again
+      </template>
+    </vaadin-notification>
+
+    <vaadin-dialog id="dialog" no-close-on-esc no-close-on-outside-click opened="{{dialogOpen}}">
+      <template>
+        <vaadin-vertical-layout theme="spacing">
+          <div>
+            <h1>The content of dialog</h1>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin maximus magna et orci lacinia maximus. Fusce ut tincidunt ex. Morbi sed vehicula metus. Phasellus vel leo a elit viverra congue. Donec finibus iaculis eros vel vestibulum. Cras vehicula neque enim, eget faucibus ligula tempus vel. Integer felis nisi, sollicitudin at lectus at, bibendum vulputate risus. In ut massa et massa scelerisque viverra.</p>
+          </div>
+          <vaadin-button on-click="toggleDialog">Ok</vaadin-button>
+        </vaadin-vertical-layout>
+      </template>
+    </vaadin-dialog>
+
+  </template>
+
+  <script>
+    class SavePessoa extends Polymer.Element {
+      static get is() {
+        return 'save-pessoa';
+      }
+      static get properties() {
+        return {
+          pessoaId:{
+            type:String,
+            notify:true,
+            value:null
+          },
+
+          pessoa:Object,
+
+          dietarys: {
+            type: Array,
+            value: () =>
+              [
+                'Ovo-Vegetarian',
+                'Lacto-Vegetarian',
+                'Lacto-Ovo Vegetarians',
+                'Pescetarians',
+                'Other'
+              ]
+          },
+          
+          dialogOpen: Boolean,
+          formSubmittedOpen: Boolean,
+          formInvalidOpen: Boolean,
+          radioValue: String
+        };
+      }
+
+      toggleDialog(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        this.dialogOpen = !this.dialogOpen;
+      }
+      
+      _submitForm() {
+        if (this.$.form.validate()) {
+
+          // if(this.pessoaId){
+
+          //   this.$.document.saveValue("/pessoas/"+this.pessoaId).then(function() {
+          //     this.$.document.reset();
+          //   }.bind(this));
+          // }
+          // else{
+            this.formSubmittedOpen = true;
+          
+            if (this.$.document.isNew) {
+                this.$.document.saveValue("/pessoas").then(function() {
+                this.$.document.reset();
+              }.bind(this));
+            }
+          // }
+
+
+          
+        } else {
+          this.formInvalidOpen = true;
+        }
+      }
+      _resetForm(){
+        this.pessoaId=null;
+      }
+      _deleteForm(){
+        this.$.document.destroy();
+        this._resetForm();
+      }
+    }
+    window.customElements.define(SavePessoa.is, SavePessoa);
+  </script>
+</dom-module>

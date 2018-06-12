@@ -1,0 +1,303 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
+<link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../bower_components/app-layout/app-header-layout/app-header-layout.html">
+<link rel="import" href="../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
+<link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../bower_components/app-route/app-location.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/vaadin-lumo-styles/icons.html">
+<link rel="import" href="../bower_components/vaadin-button/vaadin-button.html">
+
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="shared/shared-styles.html">
+<link rel="import" href="shared/myicons.html">
+
+
+<!-- ADD THIS HERE -->
+<!-- FIRST: Include Firebase dependencies -->
+<link rel="import" href="../bower_components/polymerfire/firebase-app-script.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth-script.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-database-script.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="../bower_components/polymerfire/polymerfire.html">
+
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+
+<link rel="lazy-import" href="pages/employee/list.html">
+<link rel="lazy-import" href="pages/employee/new.html">
+<link rel="lazy-import" href="pages/pessoa/list.html">
+<link rel="lazy-import" href="pages/pessoa/save.html">
+
+<link rel="lazy-import" href="pages/error/404.html">
+
+<dom-module id="main-app">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+      app-drawer-layout:not([narrow]) [drawer-toggle] {
+        display: none;
+      }
+      app-header {
+        color: var(--lumo-base-color);
+        /* background-color: var(--lumo-primary-color); */
+        background: rgb(0,169,157);
+        background: linear-gradient(90deg, rgba(0,169,157,1) 8%, rgba(34,181,115,1) 100%);
+
+      }
+      app-header vaadin-button {
+        color: var(--lumo-base-color);
+      }
+      .drawer-list {
+        margin: var(--lumo-space-tall-m);
+      }
+      .drawer-list a {
+        display: block;
+        padding: 0 var(--lumo-space-m);
+        color: var(--lumo-secondary-text-color);
+        line-height: var(--lumo-size-m);
+        text-decoration: none;
+      }
+      .drawer-list a.iron-selected {
+        color: var(--lumo-body-text-color);
+        font-weight: bold;
+      }
+
+      paper-icon-button {
+        --paper-icon-button-ink-color: white;
+      }
+
+      paper-icon-button + [main-title] {
+        margin-left: 24px;
+      }
+
+      .title{
+        margin-top: 6px;
+        font-family: geomanist;
+      }
+    </style>
+
+    <!-- ADD THIS HERE
+    <!-- FIRST: Insert Firebase app here --> 
+    <firebase-app name="fire"
+                  auth-domain="[[configFire.authDomain]]"
+                  database-url="[[configFire.databaseURL]]"
+                  api-key="[[configFire.apiKey]]">
+    </firebase-app>
+
+    <app-location
+        route="{{route}}"
+        url-space-regex="^[[rootPath]]">
+    </app-location>
+
+    <app-route
+        route="{{route}}"
+        pattern="[[rootPath]]:page"
+        data="{{routeData}}"
+        tail="{{subroute}}">
+    </app-route>
+
+    <app-drawer-layout fullbleed narrow="{{narrow}}">
+      <!-- Drawer content -->
+      <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]">
+        <app-toolbar>Menu</app-toolbar>
+
+        <!-- menu de seleção -->
+        <iron-selector 
+              selected="[[page]]" 
+              attr-for-selected="name" 
+              class="drawer-list" 
+              role="navigation">
+
+          <a name="pages/employee/list" href="pages/employee/list">Employee list</a>
+          <a name="pages/employee/new" href="pages/employee/new">New employee</a>
+
+          <template is="dom-if" if="[[user]]">
+            <a name="pages/pessoa/list" href="pages/pessoa/list">Pessoas</a>
+            <a name="pages/pessoa/sava" href="pages/pessoa/save">Nova Pessoa</a>            
+          </template>
+          
+        </iron-selector>
+
+
+      </app-drawer>
+
+      <!-- Main content -->
+      <app-header-layout has-scrolling-region>
+
+        <!-- ADD HERE -->
+        <!-- SECOND: Firebase auth -->
+        <firebase-auth id="auth" 
+                       app-name="fire"
+                       user="{{user}}" 
+                       provider="google" >
+        </firebase-auth>
+
+        <app-header slot="header" condenses reveals effects="waterfall">
+          <app-toolbar>
+
+            <vaadin-button theme="icon" aria-label="Toggle menu" drawer-toggle>
+              <iron-icon icon="lumo:menu"></iron-icon>
+            </vaadin-button>
+
+            <div class="title" main-title>Cuida Cidadão</div>
+            <div></div>
+
+            <!-- ADD HERE -->
+            <!-- SECOND: Firebase auth -->
+            <template is="dom-if" if="[[!user]]">
+              <paper-icon-button icon="myicons:account-box" on-tap="_login" alt="Login"></paper-icon-button>
+            </template>
+            
+            <template is="dom-if" if="[[user]]">
+              <paper-icon-button icon="myicons:exit-to-app" on-tap="_logout" alt="Logout"></paper-icon-button>
+            </template>
+
+          </app-toolbar>
+        </app-header>
+
+
+        
+        <!-- Selecionador de paginas, basta setar a propriedade [[pages]] -->
+        <iron-pages
+            selected="[[page]]"
+            attr-for-selected="name"
+            fallback-selection="404"
+            role="main">
+
+          <employee-list name="pages/employee/list"></employee-list>
+          <employee-new name="pages/employee/new"></employee-new>
+          
+        
+          <list-pessoa name="pages/pessoa/list"></list-pessoa>
+          <save-pessoa name="pages/pessoa/save"></save-pessoa>              
+          
+
+          <app-404 name="404"></app-404>
+        </iron-pages>
+
+
+        
+      </app-header-layout>
+    </app-drawer-layout>
+
+
+    <!-- ADD HERE -->
+    <!-- SECOND: MESSAGE -->
+    <paper-toast id="toaster"></paper-toast>
+  </template>
+
+  <script>
+
+
+
+    // Gesture events like tap and track generated from touch will not be
+    // preventable, allowing for better scrolling performance.
+    Polymer.setPassiveTouchGestures(true);
+
+    class MainApp extends Polymer.Element {
+      static get is() {
+        return 'main-app';
+      }
+
+      static get properties() {
+        return {
+          page: {
+            type: String,
+            reflectToAttribute: true,
+            observer: '_pageChanged',
+          },
+          routeData: Object,
+          subroute: String,
+          // This shouldn't be neccessary, but the Analyzer isn't picking up
+          // Polymer.Element#rootPath
+          rootPath: String,
+          user: {
+            type: Object,
+            notify: true,
+            value: null
+          },
+          configFire: {
+            type: Object,
+            value: {
+                apiKey: "AIzaSyB7CAZHZOSrDANCv0f2unA7tPr_VkmgZXY",
+                authDomain: "cuidacidadao-teste.firebaseapp.com",
+                databaseURL: "https://cuidacidadao-teste.firebaseio.com",
+            } 
+          }
+        };
+      }
+
+      static get observers() {
+        return [
+          '_routePageChanged(routeData.page)',
+        ];
+      }
+
+
+
+      _routePageChanged(page) {
+        // If no page was found in the route data, page will be an empty string.
+        // Default to 'employee-list' in that case.
+        // console.log("Route: " + this.routeData.page);
+        // console.log("Sub: " + this.subroute.path);
+        
+        
+        this.page = page + this.subroute.path || 'pages/employee/new';
+        // Close a non-persistent drawer when the page & route are changed.
+        if (!this.$.drawer.persistent) {
+          this.$.drawer.close();
+        }
+      }
+
+      _pageChanged(page) {
+        // Load page import on demand. Show 404 page if fails 
+        console.log(page);
+        
+        const resolvedPageUrl = this.resolveUrl(page + '.html');
+        Polymer.importHref(
+          resolvedPageUrl,
+          null,
+          this._showPage404.bind(this),
+          true
+        );
+      }
+
+      _showPage404() {
+        this.page = 'pages/error/404';
+      }
+
+      _drawerToggle() {
+        this.$.drawer.toggle();
+      }
+      
+      
+      // ADD HERE
+      // SECOND Firebase sign in
+      _login() {
+        this.$.auth.signInWithPopup()
+          .then((result) => { 
+            this.$.toaster.show('Hello ' + result.user.displayName)
+          })
+          .catch(function(error) {
+            this.$.toaster.show('Erro: ' + error)
+          });
+      }
+      
+      _logout() {
+        this.$.auth.signOut()
+          .then(() => {this.$.toaster.show('Goodbye!')})
+      }
+    }
+    window.customElements.define(MainApp.is, MainApp);
+  </script>
+</dom-module>

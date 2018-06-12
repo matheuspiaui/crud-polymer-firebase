@@ -1,0 +1,174 @@
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../../bower_components/vaadin-text-field/vaadin-text-field.html">
+<link rel="import" href="../../../bower_components/vaadin-grid/vaadin-grid.html">
+<link rel="import" href="../../../bower_components/vaadin-grid/vaadin-grid-filter.html">
+<link rel="import" href="../../../bower_components/vaadin-lumo-styles/style.html">
+
+<link rel="import" href="../../../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="../../../bower_components/polymerfire/firebase-query.html">
+
+
+<link rel="import" href="../../../bower_components/vaadin-dialog/vaadin-dialog.html">
+
+
+<link rel="import" href="../../shared/shared-styles.html">
+
+<link rel="import" href="save.html">
+
+<dom-module id="list-pessoa">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        background: transparent;
+      }
+      vaadin-grid-filter {
+        width: 100%;
+      }
+      vaadin-text-field {
+        width: 100%;
+      }
+      paper-fab {
+        /* --paper-fab-background: #2B4461; */
+        /* display: inline-block; */
+        /* margin: 8px; */
+        position: fixed;
+        right: 25px;
+        bottom: 30px;
+      }
+
+    </style>
+
+
+    <firebase-query
+        id="query"
+        app-name="fire"
+        path="/pessoas"
+        data="{{data}}">
+    </firebase-query>
+
+    <!-- <iron-ajax
+      auto
+      url="employees.json"
+      handle-as="json"
+      last-response="{{_employees}}"></iron-ajax> -->
+
+    <!-- modal Editar -->
+    <vaadin-dialog id="modal">
+      <template>
+        <save-pessoa pessoa-id="[[selecionado.$key]]"></save-pessoa> 
+        <vaadin-button on-click="fecharModal">Fechar</vaadin-button>
+      </template>
+    </vaadin-dialog>
+
+
+
+    <div class="card">
+      <vaadin-grid items="[[data]]" active-item="{{selecionado}}">
+        <vaadin-grid-column>
+          <template class="header">
+            <vaadin-grid-filter aria-label="Nome" path="nome" value="[[_filterFirstName]]">
+              <vaadin-text-field slot="filter" placeholder="Nome" value="{{_filterFirstName}}" focus-target></vaadin-text-field>
+            </vaadin-grid-filter>
+          </template>
+          <template>[[item.nome]]</template>
+        </vaadin-grid-column>
+
+        <vaadin-grid-column>
+          <template class="header">
+            <vaadin-grid-filter aria-label="Sobrenome" path="sobreNome" value="[[_filterLastName]]">
+              <vaadin-text-field slot="filter" placeholder="Sobrenome" value="{{_filterLastName}}" focus-target></vaadin-text-field>
+            </vaadin-grid-filter>
+          </template>
+          <template>[[item.sobreNome]]</template>
+        </vaadin-grid-column>
+
+        <vaadin-grid-column>
+          <template class="header">Email</template>
+          <template>[[item.email]]</template>
+        </vaadin-grid-column>
+      </vaadin-grid>
+
+      <!-- <paper-fab icon="add"></paper-fab> -->
+
+
+   
+
+    </div>
+    <div class="card">
+      <save-pessoa pessoa-id="[[selecionado.$key]]"></save-pessoa> 
+    </div>
+
+    
+
+
+
+     
+    
+
+  </template>
+  <script>
+    class ListPessoa extends Polymer.Element {
+      static get is() {
+        return 'list-pessoa';
+      }
+      static get properties() {
+        return {
+          selecionado:{
+            type:Object,
+            value:null
+          },
+
+          _employees: {
+            type: Array,
+            value: () => []
+          },
+          data:{
+            type:Object,
+            observer: 'dataChanged'
+          },
+          _filterFirstName: {
+            type: String,
+            value: ''
+          },
+          _filterLastName: {
+            type: String,
+            value: ''
+          },
+
+          activeItem: {
+            observer: '_activeItemChanged'
+          }
+        };
+      }
+      
+
+      dataChanged(newData, oldData){
+        console.log(newData);        
+      }
+
+      _activeItemChanged(expense) {
+        // if (this.expenses && this.expenses.length > 0) { // don't trigger on init
+        //   this.$.expenses.selectedItems = expense ? [expense] : [];
+        //   this.dispatch('editExpense', expense);
+        // }
+        this.selecionado = expense;
+
+        // if(this.activeItem != null)
+        //   this.$.modal.opened = true;
+
+        // this.selecionado = null;
+        // console.log(expense);
+        
+      }
+
+      fecharModal(){
+        this.$.modal.opened = false;
+      }
+    }
+    window.customElements.define(ListPessoa.is, ListPessoa);
+  </script>
+</dom-module>
